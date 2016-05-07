@@ -12,9 +12,12 @@ re-entrant and behaves more like `threading.Lock`.
 `TimedFileLock` supports both shared lock and exclusive lock. It can be used
 as reader-writer lock.
 
-Example
--------
+Usage
+-----
 
+`TimedFileLock` should be used with Python's context manager.
+
+Example:
 ```python
 from timedflock import TimedFileLock
 
@@ -24,6 +27,9 @@ with TimedFileLock(lockfile, shared=False, timeout=5.5) as _lck:
     else:
         ...  # not locked
 ```
+
+Python 2.7 and later 3.x versions should be supported. Tested on Ubuntu,
+CentOS and some other Linux distros.
 
 License
 -------
