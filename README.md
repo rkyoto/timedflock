@@ -15,7 +15,7 @@ as reader-writer lock.
 Usage
 -----
 
-`TimedFileLock` should be used with Python's context manager.
+Use `TimedFileLock` with Python's context manager.
 
 Example:
 ```python
@@ -28,7 +28,7 @@ with TimedFileLock(lockfile, shared=False, timeout=5.5) as _lck:
         ...  # not locked
 ```
 
-Python 2.7 and later 3.x versions should be supported. Tested on Ubuntu,
+Python 2.7 and later Python 3.x versions are supported. Tested on Ubuntu,
 CentOS and some other Linux distros.
 
 License
