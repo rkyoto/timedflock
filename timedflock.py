@@ -87,8 +87,8 @@ class TimedFileLock:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self.locked():
-            self._unlock()
+        self._unlock()
+        return None
 
     def _try_lock(self):
         proc = None
@@ -111,7 +111,7 @@ class TimedFileLock:
         return None
 
     def _unlock(self):
-        if self._subproc.poll() is None:
+        if self._subproc is not None and self._subproc.poll() is None:
             self._subproc.send_signal(signal.SIGINT)
             self._subproc.wait()
 
