@@ -129,9 +129,14 @@ def _watcher():
 
 def _handler(signum, frame):
     # signal handler
+    if signum == signal.SIGALRM:
+        timeout_event.set()
     print('received signal:', signum, file=sys.stderr)
 
 if __name__ == '__main__':
+    # create a thimeout flag
+    timeout_event = threading.Event()
+
     # set signal handler
     signal.signal(signal.SIGALRM, _handler)
     signal.signal(signal.SIGINT, _handler)
@@ -157,6 +162,8 @@ if __name__ == '__main__':
 
         locked = True
         try:
+            if timeout_event.is_set():
+                raise RuntimeError('timeout already set')
             fcntl.flock(lock_fd, lock_op)
         except:
             locked = False
