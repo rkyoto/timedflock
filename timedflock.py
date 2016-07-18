@@ -156,7 +156,7 @@ if __name__ == '__main__':
         timeout = config['timeout']
         if timeout is not None:
             if timeout > 0:
-                signal.setitimer(signal.ITIMER_REAL, timeout)
+                signal.setitimer(signal.ITIMER_REAL, timeout, 1)
             else:
                 lock_op |= fcntl.LOCK_NB  # non-blocking
 
