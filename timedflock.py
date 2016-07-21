@@ -42,6 +42,11 @@ try:
 except ImportError:
     import pickle
 
+try:
+    from thread import get_ident
+except ImportError:
+    from _thread import get_ident
+
 __all__ = ['TimedFileLock']
 
 _PY_EXEC = sys.executable
@@ -52,7 +57,7 @@ class TimedFileLock:
     The file lock wrapper class. Use with Python's context manager.
     """
 
-    def __init__(self, lockfile, shared=None, timeout=None):
+    def __init__(self, lockfile, shared=False, timeout=0, tag=None):
         """
         Arguments:
 
@@ -65,9 +70,13 @@ class TimedFileLock:
             Exclusive lock is acquired by default.
 
         `timeout`
-            Timeout value in fractional seconds. Set timeout=None or omit
-            this argument to set infinite timeout. Set timeout=0 to set the
-            operation non-blocking.
+            Timeout value in fractional seconds. Set timeout=0 or omit the
+            argument to set the operation non-blocking. Set timeout=None to
+            set infinite timeout (with caution).
+
+        `tag`
+            A string to identify the lock. If tag is not set, the default tag
+            is "[<function>@<filename>:<line>]".
 
         """
         if timeout is not None:
@@ -80,6 +89,13 @@ class TimedFileLock:
             'shared': bool(shared),
             'timeout': timeout,
         }
+
+        if tag is not None:
+            self.tag = str(tag)
+        else:
+            _file, _no, _func, _text = traceback.extract_stack(limit=2)[0]
+            self.tag = '[{}@{}:{}]'.format(_func, os.path.basename(_file), _no)
+
         self._subproc = None
 
     def __enter__(self):
@@ -91,10 +107,14 @@ class TimedFileLock:
         return None
 
     def _try_lock(self):
+        parent = 'ppid:{},tid:{}'.format(os.getpid(), get_ident())
+        config = base64.b64encode(pickle.dumps(self._config))
+
         proc = None
         try:
-            config = base64.b64encode(pickle.dumps(self._config))
-            proc = Popen([_PY_EXEC, '-u', _PY_FILE, config], stdin=PIPE, stdout=PIPE)
+            proc = Popen([_PY_EXEC, '-u', _PY_FILE, self.tag, parent, config],
+                         stdin=PIPE,
+                         stdout=PIPE)
 
             outline = proc.stdout.readline()
             if outline != b'locked\n':
@@ -141,8 +161,13 @@ if __name__ == '__main__':
     signal.signal(signal.SIGALRM, _handler)
     signal.signal(signal.SIGINT, _handler)
 
+    # debug: print tag
+    tag = sys.argv[1]
+    parent = sys.argv[2]
+    print('Created subprocess for lock', tag, 'by', parent, file=sys.stderr)
+
     # load config
-    config = pickle.loads(base64.b64decode(sys.argv[1]))
+    config = pickle.loads(base64.b64decode(sys.argv[3]))
 
     # watch stdin in case parent process exits
     watcher = threading.Thread(target=_watcher)
