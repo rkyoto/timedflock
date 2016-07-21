@@ -71,7 +71,7 @@ class TimedFileLock:
 
         `tag`
             A string to identify the lock. If tag is not set, the default tag
-            is "[<function>@<filename>:<line>]".
+            is "<function>@<filename>:<line>".
 
         """
         if timeout is not None:
@@ -89,7 +89,7 @@ class TimedFileLock:
             self.tag = str(tag)
         else:
             _file, _no, _func, _text = traceback.extract_stack(limit=2)[0]
-            self.tag = '[{}@{}:{}]'.format(_func, os.path.basename(_file), _no)
+            self.tag = '{}@{}:{}'.format(_func, os.path.basename(_file), _no)
 
         self._subproc = None
 
