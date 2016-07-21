@@ -146,11 +146,14 @@ def _handler(signum, frame):
     # signal handler
     if signum == signal.SIGALRM:
         timeout_event.set()
+    else:
+        exit_event.set()
     print('received signal:', signum, file=sys.stderr)
 
 if __name__ == '__main__':
-    # create a thimeout flag
+    # create internal events
     timeout_event = threading.Event()
+    exit_event = threading.Event()
 
     # set signal handler
     signal.signal(signal.SIGALRM, _handler)
@@ -194,7 +197,10 @@ if __name__ == '__main__':
             if locked:
                 sys.stdout.write('locked\n')
                 sys.stdout.flush()
-                signal.pause()
+                while True:
+                    exit_event.wait(100)
+                    if exit_event.is_set():
+                        break
         except:
             traceback.print_exc()
 
