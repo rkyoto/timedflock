@@ -32,15 +32,10 @@ from __future__ import print_function
 import sys, os
 import fcntl
 import signal
-import base64
+import json
 import threading
 import traceback
 from subprocess import Popen, PIPE
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 try:
     from thread import get_ident
@@ -108,7 +103,7 @@ class TimedFileLock:
 
     def _try_lock(self):
         parent = 'ppid:{},tid:{}'.format(os.getpid(), get_ident())
-        config = base64.b64encode(pickle.dumps(self._config))
+        config = json.dumps(self._config)
 
         proc = None
         try:
@@ -167,7 +162,7 @@ if __name__ == '__main__':
     print('Created subprocess for lock', tag, 'by', parent, file=sys.stderr)
 
     # load config
-    config = pickle.loads(base64.b64decode(sys.argv[3]))
+    config = json.loads(sys.argv[3])
 
     # watch stdin in case parent process exits
     watcher = threading.Thread(target=_watcher)
