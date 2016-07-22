@@ -114,7 +114,7 @@ class TimedFileLock:
             outline = proc.stdout.readline()
             if outline != b'locked\n':
                 # not locked
-                proc.communicate(b'quit')
+                proc.wait()
                 proc = None
 
         except:
@@ -165,6 +165,7 @@ if __name__ == '__main__':
     config = json.loads(sys.argv[3])
 
     watcher = threading.Thread(target=_watcher)
+    watcher.daemon = True
     watcher.start()
 
     with open(config['lockfile'], 'ab') as _file:
