@@ -120,7 +120,7 @@ class TimedFileLock:
         except:
             if proc is not None and proc.poll() is None:
                 proc.kill()
-                proc = None
+            proc = None
 
         self._subproc = proc
         return None
