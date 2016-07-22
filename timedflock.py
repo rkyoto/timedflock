@@ -29,9 +29,11 @@ with TimedFileLock(lockfile, shared=False, timeout=5.5) as _lck:
 """
 from __future__ import print_function
 
-import sys, os
+import sys
+import os
 import fcntl
 import signal
+import time
 import json
 import threading
 import traceback
@@ -189,4 +191,5 @@ if __name__ == '__main__':
         if locked:
             sys.stdout.write('locked\n')
             sys.stdout.flush()
-            signal.pause()  # just pause the process infinitely
+            while True:
+                time.sleep(1)  # just pause the process infinitely
