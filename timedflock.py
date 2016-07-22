@@ -144,17 +144,11 @@ def _watcher():
 
 def _handler(signum, frame):
     # signal handler
-    if signum == signal.SIGALRM:
-        timeout_event.set()
-    else:
-        exit_event.set()
     print('received signal:', signum, file=sys.stderr)
+    if signum == signal.SIGINT:
+        sys.exit(0)
 
 if __name__ == '__main__':
-    # create internal events
-    timeout_event = threading.Event()
-    exit_event = threading.Event()
-
     # set signal handler
     signal.signal(signal.SIGALRM, _handler)
     signal.signal(signal.SIGINT, _handler)
@@ -185,24 +179,14 @@ if __name__ == '__main__':
 
         locked = True
         try:
-            if timeout_event.is_set():
-                raise RuntimeError('timeout already set')
             fcntl.flock(lock_fd, lock_op)
         except:
             locked = False
 
-        try:
-            # reset timer
-            signal.setitimer(signal.ITIMER_REAL, 0)
-            if locked:
-                sys.stdout.write('locked\n')
-                sys.stdout.flush()
-                while True:
-                    exit_event.wait(100)
-                    if exit_event.is_set():
-                        break
-        except:
-            traceback.print_exc()
+        # reset timer
+        signal.setitimer(signal.ITIMER_REAL, 0)
 
         if locked:
-            fcntl.flock(lock_fd, fcntl.LOCK_UN)  # unlock
+            sys.stdout.write('locked\n')
+            sys.stdout.flush()
+            signal.pause()  # just pause the process infinitely
