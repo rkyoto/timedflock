@@ -138,7 +138,7 @@ class TimedFileLock:
 
 def _watcher():
     _data = sys.stdin.read()
-    if _data == b'quit':
+    if _data == 'quit':
         print('received quit command', file=sys.stderr)
         exit_event.set()
     else:
