@@ -89,8 +89,8 @@ class TimedFileLock:
         if tag is not None:
             self.tag = str(tag)
         else:
-            _file, _no, _func, _text = traceback.extract_stack(limit=2)[0]
-            self.tag = '{}@{}:{}'.format(_func, os.path.basename(_file), _no)
+            _file, _line, _func, _text = traceback.extract_stack(limit=2)[0]
+            self.tag = '{}@{}:{}'.format(_func, os.path.basename(_file), _line)
 
         self._subproc = None
 
